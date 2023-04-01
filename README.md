@@ -10,6 +10,7 @@
 - 認識されたテキストのクリップボードへのコピーとカーソル自動ペースト
 - APIキーの保存と変更
 # 実行方法
+まずは[API KEY](https://auto-worker.com/blog/?p=6988)を取得してください。
 ## 例１
 [Releases](https://github.com/akitomonam/whisper-api-GUI/releases)からファイルをダウンロードして設定ファイルを記述して、.exeファイルを実行する。(windowsのみ対応)  
 この場合、環境構築の必要はありません。
