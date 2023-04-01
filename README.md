@@ -11,7 +11,8 @@
 - APIキーの保存と変更
 # 実行方法
 ## 例１
-[Releases](https://github.com/akitomonam/whisper-api-GUI/releases)からファイルをダウンロードして設定ファイルを記述して、.exeファイルを実行する。(windowsのみ対応)
+[Releases](https://github.com/akitomonam/whisper-api-GUI/releases)からファイルをダウンロードして設定ファイルを記述して、.exeファイルを実行する。(windowsのみ対応)  
+この場合、環境構築の必要はありません。
 ## 例２
 1. 必要なPythonライブラリをインストールする。
 2. config.jsonファイルにOpenAI APIキーを保存する。
