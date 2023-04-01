@@ -10,7 +10,7 @@ import json
 class App:
     def __init__(self, master):
         # JSONファイルからAPIキーを読み取る
-        with open('config.json', 'r') as f:
+        with open('./config.json', 'r') as f:
             config = json.load(f)
             openai.api_key = config['openai_api_key']
             self.api_key = config['openai_api_key']
@@ -82,7 +82,7 @@ class App:
         if self.thread.is_alive():
             print("スレッド待ち")
             self.thread.join()
-            print("音声入力停止!!")
+            print("音声入力停止")
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
         # 赤い丸を消す
@@ -121,7 +121,6 @@ class App:
                     print("音声が認識できませんでした")
                 except sr.RequestError as e:
                     print("エラー:", e)
-        print("break print")
         print("音声入力停止")
 
     def get_selected_mic_index(self):

@@ -1,2 +1,7 @@
 config.json
 *.wav
+.venv
+build
+dist
+app.spec
+*.spec
