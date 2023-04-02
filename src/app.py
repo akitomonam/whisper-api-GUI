@@ -119,8 +119,14 @@ class App:
                     pyautogui.hotkey('ctrl', 'v')
                 except sr.UnknownValueError:
                     print("音声が認識できませんでした")
+                except openai.error.AuthenticationError as e:
+                    print("エラー:", e)
+                    error_message = "OpenAIのAPIキーが不正です。APIキーを確認してください。"
+                    self.text_box.insert(tk.END, error_message + "\n")
                 except sr.RequestError as e:
                     print("エラー:", e)
+                    error_message = "エラーが発生しました: {}".format(e)
+                    self.text_box.insert(tk.END, error_message + "\n")
         print("音声入力停止")
 
     def get_selected_mic_index(self):
