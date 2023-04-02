@@ -69,6 +69,7 @@ class App:
     def save_api_key(self):
         # 入力されたAPIキーをJSONファイルに保存する
         self.api_key = self.api_key_entry.get()
+        openai.api_key = self.api_key_entry.get()
         config = {"openai_api_key": self.api_key}
         with open('config.json', 'w') as f:
             json.dump(config, f, indent=4)
