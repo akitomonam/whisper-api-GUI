@@ -10,6 +10,7 @@ import queue
 
 class App:
     def __init__(self, master):
+
         # JSONファイルからAPIキーを読み取る
         with open('./config.json', 'r') as f:
             config = json.load(f)
@@ -18,6 +19,7 @@ class App:
 
         self.master = master
         master.title("音声入力アプリ")
+        master.protocol("WM_DELETE_WINDOW", self.on_closing)
 
 
         # マイク選択用のラベル
@@ -42,11 +44,16 @@ class App:
         self.text_box = tk.Text(master, height=10, width=50)
         self.text_box.pack()
 
+        self.canvas = None
+
         # 音声認識オブジェクトの作成
         self.r = sr.Recognizer()
 
         # スレッド用のフラグ
         self.continue_recording = threading.Event()
+
+        self.thread = None
+        self.transcribe_thread = None
 
         # APIキー入力用のラベルとテキストボックスを追加する
         self.api_key_label = tk.Label(master, text="OpenAI APIキー:")
@@ -60,7 +67,7 @@ class App:
 
         self.audio_queue = queue.Queue()
 
-    def __del__(self):
+    def on_closing(self):
         # 音声入力を停止する
         self.stop_recording()
         # ウィンドウを閉じる
@@ -87,18 +94,21 @@ class App:
 
     def stop_recording(self):
         self.continue_recording.clear()
-        if self.thread.is_alive():
-            print("スレッド待ち(音声入力)")
-            self.thread.join()
-            print("音声入力停止")
-        if self.transcribe_thread.is_alive():
-            print("スレッド待ち(音声認識)")
-            self.transcribe_thread.join()
-            print("音声認識停止")
+        if self.thread is not None:
+            if self.thread.is_alive():
+                print("スレッド待ち(音声入力)")
+                self.thread.join()
+                print("音声入力停止")
+        if self.transcribe_thread is not None:
+            if self.transcribe_thread.is_alive():
+                print("スレッド待ち(音声認識)")
+                self.transcribe_thread.join()
+                print("音声認識停止")
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
         # 赤い丸を消す
-        self.canvas.destroy()
+        if self.canvas is not None:
+            self.canvas.destroy()
 
     def process_audio(self):
         # 赤い丸を表示する
