@@ -1,5 +1,5 @@
 # 概要
-このプログラムは、Tkinterを使用してGUIを作成し、SpeechRecognitionとOpenAI whisper APIを使用した音声入力アプリケーションです。  
+このプログラムは、Python(Tkinter)を使用してGUIを作成し、SpeechRecognitionとOpenAI whisper APIを使用した音声入力アプリケーションです。  
 ![image](https://user-images.githubusercontent.com/72239675/229275806-7be7de7f-f0fa-43a7-a463-06ae254cbc16.png)
 
 # 機能
