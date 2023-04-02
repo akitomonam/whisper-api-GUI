@@ -6,6 +6,7 @@ import pyautogui
 import pyperclip
 import threading
 import json
+import queue
 
 class App:
     def __init__(self, master):
@@ -57,6 +58,8 @@ class App:
         self.save_api_key_button = tk.Button(master, text="APIキーを保存する", command=self.save_api_key)
         self.save_api_key_button.pack()
 
+        self.audio_queue = queue.Queue()
+
     def __del__(self):
         # 音声入力を停止する
         self.stop_recording()
@@ -74,15 +77,23 @@ class App:
         self.start_button.config(state=tk.DISABLED)
         self.stop_button.config(state=tk.NORMAL)
         self.continue_recording.set()
+        # 音声入力スレッドを開始する
         self.thread = threading.Thread(target=self.process_audio)
         self.thread.start()
+        # 音声認識スレッドを開始する
+        self.transcribe_thread = threading.Thread(target=self.transcribe_audio)
+        self.transcribe_thread.start()
 
     def stop_recording(self):
         self.continue_recording.clear()
         if self.thread.is_alive():
-            print("スレッド待ち")
+            print("スレッド待ち(音声入力)")
             self.thread.join()
             print("音声入力停止")
+        if self.transcribe_thread.is_alive():
+            print("スレッド待ち(音声認識)")
+            self.transcribe_thread.join()
+            print("音声認識停止")
         self.start_button.config(state=tk.NORMAL)
         self.stop_button.config(state=tk.DISABLED)
         # 赤い丸を消す
@@ -107,27 +118,40 @@ class App:
                         f.setsampwidth(2)
                         f.setframerate(36000)
                         f.writeframesraw(audio.get_raw_data())
-                    # 音声ファイルをOpenAI APIで解析する
+                    # 音声ファイルをキューに追加する
                     audio_file= open("audio.wav", "rb")
-                    transcript = openai.Audio.transcribe("whisper-1", audio_file)
-                    text = transcript["text"]
-                    print("認識結果:", text)
-                    # テキストをGUIに表示する
-                    self.text_box.insert(tk.END, text + "\n")
-                    # 認識されたテキストをWindowsのクリップボードにコピーする
-                    pyperclip.copy(text)
-                    pyautogui.hotkey('ctrl', 'v')
+                    self.audio_queue.put(audio_file)
+                    print("キュー追加完了")
                 except sr.UnknownValueError:
                     print("音声が認識できませんでした")
-                except openai.error.AuthenticationError as e:
-                    print("エラー:", e)
-                    error_message = "OpenAIのAPIキーが不正です。APIキーを確認してください。"
-                    self.text_box.insert(tk.END, error_message + "\n")
                 except sr.RequestError as e:
                     print("エラー:", e)
                     error_message = "エラーが発生しました: {}".format(e)
                     self.text_box.insert(tk.END, error_message + "\n")
-        print("音声入力停止")
+
+    def transcribe_audio(self):
+        while self.continue_recording.is_set():
+            try:
+                # キューから音声ファイルを取り出す
+                audio = self.audio_queue.get(timeout=1)
+                transcript = openai.Audio.transcribe("whisper-1", audio)
+                text = transcript["text"]
+                print("認識結果:", text)
+                # 認識結果をテキストボックスに追加する
+                self.text_box.insert(tk.END, text + '\n')
+                # クリップボードに認識結果をコピーする
+                pyperclip.copy(text)
+                pyautogui.hotkey('ctrl', 'v')
+            except queue.Empty:
+                continue
+            except openai.error.AuthenticationError as e:
+                print("エラー:", e)
+                error_message = "OpenAIのAPIキーが不正です。APIキーを確認してください。"
+                self.text_box.insert(tk.END, error_message + "\n")
+            # キューからのアイテムを処理し終わったので、キューから削除する
+            self.audio_queue.task_done()
+        print("音声認識停止（関数内）")
+
 
     def get_selected_mic_index(self):
         mic_name = self.mic_var.get()
